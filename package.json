@@ -18,7 +18,10 @@
   },
   "homepage": "https://github.com/oskarwilliams378/Bookish#readme",
   "dependencies": {
+    "bcrypt": "^3.0.6",
     "express": "^4.17.1",
+    "jsonwebtoken": "^8.5.1",
+    "passport-jwt": "^4.0.0",
     "pg-promise": "^8.7.5"
   },
   "devDependencies": {

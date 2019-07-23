@@ -36,10 +36,10 @@ CREATE TABLE IF NOT EXISTS BookAuthor (
 );
 
 CREATE TABLE IF NOT EXISTS Account (
-	id serial PRIMARY KEY,
 	fullname VARCHAR(255) NOT NULL,
 	username VARCHAR(255) NOT NULL,
-	password VARCHAR(255) NOT NULL
+	password VARCHAR(255) NOT NULL,
+	UNIQUE(username)
 );
 
 CREATE TABLE IF NOT EXISTS BorrowBooks (
