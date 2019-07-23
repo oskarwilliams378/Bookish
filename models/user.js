@@ -20,7 +20,7 @@ class User {
         });
     }
 
-    static check({ username, password }) {
+    static checkFull({ username, password }) {
         return new Promise((resolve, reject) => {
             db.one('SELECT password FROM account WHERE username = $1', username)
                 .then(hashedPassword => {
@@ -33,6 +33,14 @@ class User {
                 .catch((err) => reject(err));
         }
         );
+    }
+
+    static checkName(username) {
+        return new Promise((resolve) => {
+            db.one('SELECT * FROM account WHERE username = $1', username)
+                .then(() => resolve(true))
+                .catch(() => resolve(false));
+        });
     }
 }
 
