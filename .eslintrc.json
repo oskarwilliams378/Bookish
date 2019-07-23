@@ -1,0 +1,27 @@
+{
+    "env": {
+        "browser": true,
+        "commonjs": true,
+        "es6": true
+    },
+    "extends": [
+        "eslint:recommended"
+    ],
+    "globals": {
+        "Atomics": "readonly",
+        "SharedArrayBuffer": "readonly"
+    },
+    "parserOptions": {
+        "ecmaVersion": 2018,
+        "sourceType": "module"
+    },
+    "rules": {
+        "semi":["error", "always"],
+        "indent":["error", 4],
+        "linebreak-style":["error","windows"],
+        "no-plusplus":["error", { "allowForLoopAfterthoughts": true }],
+        "no-console":["off"],
+        "eqeqeq":["error"],
+        "prefer-const":["error"]
+    }
+}
