@@ -9,7 +9,7 @@ module.exports = (req, res, next) => {
         .map(cookie => cookie.split('='))
         .find(cookie => cookie[0] === 'Authentication_Token');
     if (token) {
-        jwt.verify(token[1], 'secretsoftwireproject', { maxAge: 60 }, (err, result) => {
+        jwt.verify(token[1], 'secretsoftwireproject', { maxAge: 3600 }, (err, result) => {
             if (!err) {
                 username = result.username;
             }

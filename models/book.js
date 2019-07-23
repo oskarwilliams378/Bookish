@@ -11,6 +11,15 @@ class Book {
         this.author = author;
     }
 
+    addBook() {
+        return new Promise((resolve, reject) => {
+            db.none('INSERT INTO book (title, isbn, edition, image_url, barcode_image_url) VALUES ($1,$2,$3,$4,$5)',
+                [this.title, this.isbn, this.edition, this.imageURL, this.barcodeImageUrl])
+                .then(book => resolve(new Book(book, null)))
+                .catch(err => reject(err));
+        });
+    }
+
     static retrieveById(id) {
         return new Promise((resolve, reject) => {
             db.one('SELECT * FROM book WHERE id = $1', id)

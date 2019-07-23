@@ -1,8 +1,7 @@
--- Database: bookish
 
--- DROP DATABASE bookish;
+--  DROP DATABASE bookish;
 
--- CREATE DATABASE "bookish"
+--  CREATE DATABASE "bookish"
 --     WITH
 --     OWNER = bookish
 --     ENCODING = 'UTF8'
@@ -14,7 +13,7 @@
 CREATE TABLE IF NOT EXISTS Book (
 	id serial PRIMARY KEY,
 	title VARCHAR(255) NOT NULL,
-	ISBN VARCHAR(16) NOT NULL,
+	isbn VARCHAR(16) NOT NULL,
 	edition VARCHAR(255),
 	image_url VARCHAR(255),
 	barcode_image_url VARCHAR(255) NOT NULL	
@@ -45,7 +44,8 @@ CREATE TABLE IF NOT EXISTS Account (
 CREATE TABLE IF NOT EXISTS BorrowBooks (
 	id serial PRIMARY KEY,
 	bookid INTEGER REFERENCES Book(id),
-	accountid INTEGER REFERENCES Account(id),
+	accountusername VARCHAR(255) REFERENCES Account(username),
 	duedate VARCHAR(255) NOT NULL,
-	returned BOOLEAN
+	returned BOOLEAN NOT NULL,
+	returndate VARCHAR(255)
 );

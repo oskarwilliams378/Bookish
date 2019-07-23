@@ -10,14 +10,21 @@ const app = express();
 app.use(express.urlencoded({ extended: false }));
 
 app.get('/', (req, res) => {
-    res.send('Hello World');
+    res.send('Hello Books');
 });
 
-app.get('/books', auth, (req, res) => {
+app.get('/book', auth, (req, res) => {
     Book.retrieveAll()
         .then(books => res.send(books));
     
 });
+
+app.route('/book/add')
+    .get((req, res) => res.sendFile(path.join(__dirname, 'frontend', 'addBook.html'))) // eslint-disable-line no-undef
+    .post((req, res) => { // eslint-disable-line no-unused-vars
+        const book = new Book({title: req.body.title, isbn: req.body.isbn, edition: req.body.edition, image_url: null, barcode_image_url:'placeholder'}, req.body.author);
+        book.addBook();
+    });
 
 app.route('/login')
     .get((req, res) => res.sendFile(path.join(__dirname, 'frontend', 'login.html'))) // eslint-disable-line no-undef
