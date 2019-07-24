@@ -19,10 +19,13 @@
   "homepage": "https://github.com/oskarwilliams378/Bookish#readme",
   "dependencies": {
     "bcrypt": "^3.0.6",
+    "canvas": "^2.5.0",
     "express": "^4.17.1",
+    "jsbarcode": "^3.11.0",
     "jsonwebtoken": "^8.5.1",
     "passport-jwt": "^4.0.0",
-    "pg-promise": "^8.7.5"
+    "pg-promise": "^8.7.5",
+    "sequelize": "^5.10.2"
   },
   "devDependencies": {
     "nodemon": "^1.19.1"

@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 
-const User = require('./models/user');
+const User = require('./models/userModel');
 
 module.exports = (req, res, next) => {
     let username = '';
@@ -19,7 +19,7 @@ module.exports = (req, res, next) => {
         if (validUser) {
             next();
         } else {
-            res.redirect('/login');
+            res.redirect('/user/login');
         }
     });
 };
