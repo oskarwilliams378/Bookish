@@ -16,14 +16,35 @@ app.get('/', (req, res) => {
 app.get('/book', auth, (req, res) => {
     Book.retrieveAll()
         .then(books => res.send(books));
-    
+});
+
+app.get('/book/id/:id', auth, (req, res) => {
+    Book.retrieveById(req.params.id)
+        .then(book => res.send(book));
+});
+
+app.get('/book/isbn/:isbn', auth, (req, res) => {
+    Book.retrieveByISBN(req.params.isbn)
+        .then(books => res.send(books));
+});
+
+app.get('/book/author/:author', auth, (req, res) => {
+    Book.retrieveByAuthor(req.params.author)
+        .then(books => res.send(books));
+});
+
+app.get('/book/title/:title', auth, (req, res) => {
+    Book.retrieveByTitle(req.params.title)
+        .then(books => res.send(books));
 });
 
 app.route('/book/add')
-    .get((req, res) => res.sendFile(path.join(__dirname, 'frontend', 'addBook.html'))) // eslint-disable-line no-undef
-    .post((req, res) => { // eslint-disable-line no-unused-vars
+    .get(auth, (req, res) => res.sendFile(path.join(__dirname, 'frontend', 'addBook.html'))) // eslint-disable-line no-undef
+    .post(auth, (req, res) => { // eslint-disable-line no-unused-vars
         const book = new Book({title: req.body.title, isbn: req.body.isbn, edition: req.body.edition, image_url: null, barcode_image_url:'placeholder'}, req.body.author);
-        book.addBook();
+        book.addBook().then(() => {
+            res.redirect('/book');
+        });
     });
 
 app.route('/login')
@@ -34,7 +55,7 @@ app.route('/login')
                 if (valid) {
                     const token = jwt.sign({username : req.body.username}, 'secretsoftwireproject');
                     res.cookie('Authentication_Token', token);
-                    res.redirect('/books');
+                    res.redirect('/book');
                 }
             });
     });
@@ -45,11 +66,6 @@ app.route('/signup')
         const user = new User(req.body);
         user.createUser().then(() => res.redirect('/login'));
     });
-
-app.get('/signup', (req, res) => {
-    const user = new User(req.query);
-    user.createUser().then(() => res.send('Done'));
-});
 
 app.get('/logout', (req, res) => {
     res.clearCookie('Authentication_Token');

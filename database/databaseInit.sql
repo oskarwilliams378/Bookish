@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS Book (
 
 CREATE TABLE IF NOT EXISTS Author (
 	id serial PRIMARY KEY,
-	fullname VARCHAR(255) NOT NULL,
+	fullname VARCHAR(255) UNIQUE NOT NULL,
 	pseudonym1 VARCHAR(255),
 	pseudonym2 VARCHAR(255),
 	pseudonym3 VARCHAR(255),
