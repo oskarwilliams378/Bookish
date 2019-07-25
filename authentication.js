@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 
-const User = require('./models/userModel');
+const UserModel = require('./models/userModel');
 
 module.exports = (req, res, next) => {
     let username = '';
@@ -15,7 +15,7 @@ module.exports = (req, res, next) => {
             }
         });
     }
-    User.checkName(username).then(validUser => {
+    UserModel.accountExists(username).then(validUser => {
         if (validUser) {
             next();
         } else {

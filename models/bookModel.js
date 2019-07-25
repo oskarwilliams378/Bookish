@@ -1,14 +1,18 @@
-const db = require('../database/db');
+const SQ = require('../database/db');
+const Book = SQ.Book;
+const Author = SQ.Author;
+const BookAuthor = SQ.BookAuthor;
+const BorrowedBook = SQ.BorrowedBook;
 const JsBarcode = require('jsbarcode');
 const Canvas = require('canvas');
 
-class Book {
+class BookModel {
     constructor({ id, title, isbn, edition, image_url, barcode_image_url }, author, authorId) {
         this.id = id;
         this.title = title;
         this.isbn = isbn;
         this.edition = edition;
-        this.imageURL = image_url;
+        this.imageUrl = image_url;
         this.barcodeImageUrl = barcode_image_url;
         this.author = author;
         this.authorId = authorId;
@@ -22,15 +26,14 @@ class Book {
 
     addBook() {
         return new Promise((resolve, reject) => {
-            db.one('INSERT INTO book (title, isbn, edition, image_url, barcode_image_url) VALUES ($1,$2,$3,$4,$5) RETURNING id',
-                [this.title, this.isbn, this.edition, this.imageURL, this.barcodeImageUrl])
-                .then(id => {
-                    this.barcodeImageUrl = this.getBarcode(id.id);
-                    db.none('UPDATE book SET barcode_image_url = $1 WHERE id = $2', [this.barcodeImageUrl, id.id])
-                        .then(() =>
-                            db.none('INSERT INTO bookauthor (bookid, authorid) VALUES ($1, $2)', [id.id, this.authorId])
-                                .then(() => resolve())
-                                .catch(err => reject(err)));
+            Book.create({ title: this.title, isbn: this.isbn, edition: this.edition, image_url: this.imageUrl, barcode_image_url: this.barcodeImageUrl })
+                .then(book => {
+                    this.id = book.id;
+                    this.barcodeImageUrl = this.getBarcode(this.id);
+                    Book.update({ barcode_image_url: this.barcodeImageUrl }, { where: { id: this.id } })
+                        .then(() => BookAuthor.create({ bookId: this.id, authorId: this.authorId })
+                            .then(() => resolve())
+                            .catch(err => reject(err)));
                 })
                 .catch(err => reject(err));
         });
@@ -38,37 +41,37 @@ class Book {
 
     retrieveAuthor() {
         return new Promise((resolve, reject) => {
-            db.one('SELECT authorid FROM bookauthor WHERE bookid = $1', this.id)
-                .then(authorid => db.any('SELECT * FROM author WHERE id = $1', authorid.authorid)
-                    .then(author => resolve(author)))
+            BookAuthor.findOne({ where: { bookId: this.id } })
+                .then(bookauthor => {
+                    Author.findOne({ where: { id: bookauthor.authorId } })
+                        .then(author => resolve(author));
+                }
+                )
                 .catch(err => reject(err));
         });
     }
 
     static retrieveBorrowedBooks() {
         return new Promise((resolve, reject) => { //eslint-disable-line no-unused-vars
-            db.any('SELECT bookid FROM borrowbooks WHERE returned = false')
-                .then(bookIds => {
-                    return Promise.all(bookIds.map(bookId => this.retrieveById(bookId.bookid)))
-                        .then(books => resolve(books))
-                        .catch(() => resolve([]));
-                });
+            Book.findAll({ include: [{ model: BorrowedBook, where: { returned: false } }] })
+                .then(books => resolve(books))
+                .catch(() => resolve([]));
         });
     }
 
-    static borrowBook(bookid, username, dueDate) {
+    static borrowBook(bookId, username, dueDate) {
         return new Promise((resolve, reject) => {
-            db.none('INSERT INTO borrowbooks (bookid, accountusername, duedate, returned) VALUES ($1, $2, $3, false)', [bookid, username, dueDate])
+            BorrowedBook.create({ bookId: bookId, accountUsername: username, duedate: dueDate, returned: false })
                 .then(() => resolve())
                 .catch(err => reject(err));
         });
     }
 
-    static returnBook(bookid) {
+    static returnBook(bookId) {
         const date = new Date();
-        const formatDate = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`; 
+        const formatDate = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
         return new Promise((resolve, reject) => {
-            db.none('UPDATE borrowbooks SET returned = true, returndate = $1 WHERE bookid = $2 AND returned = false', [formatDate,bookid])
+            BorrowedBook.update({ returned: true, returndate: formatDate }, { where: { bookId: bookId } })
                 .then(() => resolve())
                 .catch(err => reject(err));
         });
@@ -76,15 +79,8 @@ class Book {
 
     static retrieveById(id) {
         return new Promise((resolve) => {
-            db.one('SELECT * FROM book WHERE id = $1', id)
-                .then(book => {
-                    const bookObject = new Book(book, null, null);
-                    bookObject.retrieveAuthor().then(author => {
-                        bookObject.author = author[0].fullname;
-                        bookObject.authorId = author[0].id;
-                        resolve(bookObject);
-                    });
-                })
+            Book.findOne({ where: { id: id }, include: [{ model: BookAuthor, include: [{ model: Author }] }] })
+                .then(book => resolve(book))
                 .catch(() => resolve([]));
         }
         );
@@ -92,78 +88,49 @@ class Book {
 
     static retrieveByISBN(isbn) {
         return new Promise((resolve) => {
-            db.any('SELECT * FROM book WHERE isbn = $1', isbn)
-                .then(books => Promise.all(books.map(book => {
-                    const bookObject = new Book(book, null, null);
-                    return bookObject.retrieveAuthor().then(author => {
-                        bookObject.author = author[0].fullname;
-                        bookObject.authorId = author[0].id;
-                        return bookObject;
-                    });
-                })).then(books => resolve(books)))
+            Book.findAll({ where: { isbn: isbn }, include: [{ model: BookAuthor, include: [{ model: Author }] }] })
+                .then(books => resolve(books))
                 .catch(() => resolve([]));
         });
     }
 
     static retrieveAll() {
         return new Promise((resolve) => {
-            db.any('SELECT * FROM book')
-                .then(books => Promise.all(books.map(book => {
-                    const bookObject = new Book(book, null, null);
-                    return bookObject.retrieveAuthor().then(author => {
-                        bookObject.author = author[0].fullname;
-                        bookObject.authorId = author[0].id;
-                        return bookObject;
-                    });
-                })).then(books => resolve(books)))
+            Book.findAll({ include: [{ model: BookAuthor, include: [{ model: Author }] }] })
+                .then(books => resolve(books))
                 .catch(() => resolve([]));
         });
     }
 
     static retrieveByTitle(title) {
         return new Promise((resolve) => {
-            db.any('SELECT * FROM book WHERE title = $1', title)
-                .then(books => Promise.all(books.map(book => {
-                    const bookObject = new Book(book, null, null);
-                    return bookObject.retrieveAuthor().then(author => {
-                        bookObject.author = author[0].fullname;
-                        bookObject.authorId = author[0].id;
-                        return bookObject;
-                    });
-                })).then(books => resolve(books)))
+            Book.findAll({ where: { title: title }, include: [{ model: BookAuthor, include: [{ model: Author }] }] })
+                .then(books => resolve(books))
                 .catch(() => resolve([]));
         });
     }
 
     static retrieveByAuthor(author) {
         return new Promise((resolve) => {
-            db.one('SELECT id FROM author WHERE fullname = $1', author)
-                .then(id => {
-                    db.any('SELECT bookid FROM bookauthor WHERE authorid = $1', id.id)
-                        .then(bookids => {
-                            Promise.all(bookids.map(bookid => this.retrieveById(bookid.bookid)))
-                                .then(books => resolve(books));
-                        });
-                })
+            Book.findAll({ include: [{ model: BookAuthor, include: [{ model: Author, where: { fullname: author } }] }] })
+                .then(books => resolve(books))
                 .catch(() => resolve([]));
         });
     }
 
     static retrieveByAuthorId(authorId) {
         return new Promise((resolve) => {
-            db.any('SELECT bookid FROM bookauthor WHERE authorid = $1', authorId)
-                .then(bookids => {
-                    Promise.all(bookids.map(bookid => this.retrieveById(bookid.bookid)))
-                        .then(books => resolve(books));
-                })
+            Book.findAll({ include: [{ model: BookAuthor, where: { authorId: authorId }, include: [{ model: Author }] }] })
+                .then(books => resolve(books))
                 .catch(() => resolve([]));
         });
     }
-
-
-
 }
 
 
 
-module.exports = Book;
+
+
+
+
+module.exports = BookModel;

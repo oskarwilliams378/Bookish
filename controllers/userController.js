@@ -1,5 +1,5 @@
 const express = require('express');
-const User = require('../models/userModel');
+const UserModel = require('../models/userModel');
 const path = require('path');
 const jwt = require('jsonwebtoken');
 
@@ -16,7 +16,7 @@ class UserController {
     }
 
     postLogIn(req, res) {
-        User.checkFull(req.body)
+        UserModel.verifyLogin(req.body)
             .then(valid => {
                 if (valid) {
                     const token = jwt.sign({ username: req.body.username }, 'secretsoftwireproject');
@@ -31,7 +31,7 @@ class UserController {
     }
 
     postSignUp(req, res) {
-        const user = new User(req.body);
+        const user = new UserModel(req.body);
         user.createUser().then(() => res.redirect('/user/login'));
     }
 

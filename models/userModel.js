@@ -1,7 +1,8 @@
-const db = require('../database/db');
+const Account = require('../database/db').Account;
 const bcrypt = require('bcrypt');
 
-class User {
+
+class AccountModel {
     constructor({ fullname, username, password }) {
         this.name = fullname;
         this.username = username;
@@ -11,8 +12,7 @@ class User {
     createUser() {
         return new Promise((resolve, reject) => {
             bcrypt.hash(this.password, 10, (err, hash) => {
-                db.none('INSERT INTO public.account (fullname, username, password) VALUES ($1, $2, $3)',
-                    [this.name, this.username, hash])
+                Account.create({fullname: this.name, username: this.username, password: hash})
                     .then(() => resolve())
                     .catch((err) => reject(err));
             });
@@ -20,9 +20,9 @@ class User {
         });
     }
 
-    static checkFull({ username, password }) {
+    static verifyLogin({ username, password }) {
         return new Promise((resolve, reject) => {
-            db.one('SELECT password FROM account WHERE username = $1', username)
+            Account.findOne({where: {username: username}, attributes: ['password']})
                 .then(hashedPassword => {
                     bcrypt.compare(password, hashedPassword.password, (err, res) => {
                         if (!err) {
@@ -35,9 +35,9 @@ class User {
         );
     }
 
-    static checkName(username) {
+    static accountExists(username) {
         return new Promise((resolve) => {
-            db.one('SELECT * FROM account WHERE username = $1', username)
+            Account.findOne({where: {username: username}})
                 .then(() => resolve(true))
                 .catch(() => resolve(false));
         });
@@ -45,4 +45,5 @@ class User {
 }
 
 
-module.exports = User;
+
+module.exports = AccountModel;

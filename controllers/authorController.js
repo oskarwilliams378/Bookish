@@ -1,5 +1,5 @@
 const express = require('express');
-const Author = require('../models/authorModel');
+const AuthorModel = require('../models/authorModel');
 const auth = require('../authentication');
 const path = require('path');
 
@@ -15,7 +15,7 @@ class AuthorController {
     }
 
     postAddAuthor(req, res) { // eslint-disable-line no-unused-vars
-        const author = new Author(null, req.body.name);
+        const author = new AuthorModel(null, req.body.name);
         author.addAuthor().then(() => {
             res.redirect('/book/add');
         });

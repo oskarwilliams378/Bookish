@@ -1,6 +1,6 @@
-const db = require('../database/db');
+const Author = require('../database/db').Author;
 
-class Author {
+class AuthorModel {
     constructor(id, name) {
         this.id = id;
         this.name = name;
@@ -8,7 +8,7 @@ class Author {
 
     addAuthor() {
         return new Promise((resolve, reject) => {
-            db.none('INSERT INTO author (fullname) VALUES ($1)', this.name)
+            Author.create({ fullname: this.name })
                 .then(() => resolve())
                 .catch((err) => reject(err));
         });
@@ -16,4 +16,4 @@ class Author {
     }
 }
 
-module.exports = Author;
+module.exports = AuthorModel;

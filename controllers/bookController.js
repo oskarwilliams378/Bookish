@@ -1,5 +1,5 @@
 const express = require('express');
-const Book = require('../models/bookModel');
+const BookModel = require('../models/bookModel');
 const auth = require('../authentication');
 const path = require('path');
 
@@ -21,37 +21,37 @@ class BookController {
     }
 
     getAll(req, res) {
-        Book.retrieveAll()
+        BookModel.retrieveAll()
             .then(books => res.send(books));
     }
 
     getById(req, res) {
-        Book.retrieveById(req.params.id)
+        BookModel.retrieveById(req.params.id)
             .then(book => res.send(book));
     }
 
     getByISBN(req, res) {
-        Book.retrieveByISBN(req.params.isbn)
+        BookModel.retrieveByISBN(req.params.isbn)
             .then(books => res.send(books));
     }
 
     getByTitle(req, res) {
-        Book.retrieveByTitle(req.params.title)
+        BookModel.retrieveByTitle(req.params.title)
             .then(books => res.send(books));
     }
 
     getBorrowedBooks(req, res) {
-        Book.retrieveBorrowedBooks()
+        BookModel.retrieveBorrowedBooks()
             .then(books => res.send(books));
     }
 
     getByAuthor(req, res) {
-        Book.retrieveByAuthor(req.params.author)
+        BookModel.retrieveByAuthor(req.params.author)
             .then(books => res.send(books));
     }
 
     getByAuthorId(req, res) {
-        Book.retrieveByAuthorId(req.params.authorid)
+        BookModel.retrieveByAuthorId(req.params.authorid)
             .then(books => res.send(books));
     }
 
@@ -60,7 +60,7 @@ class BookController {
     }
 
     postAddBook(req, res) { // eslint-disable-line no-unused-vars
-        const book = new Book({ title: req.body.title, isbn: req.body.isbn, edition: req.body.edition, image_url: null, barcode_image_url: 'placeholder' }, null, req.body.authorId);
+        const book = new BookModel({ title: req.body.title, isbn: req.body.isbn, edition: req.body.edition, image_url: null, barcode_image_url: 'placeholder' }, null, req.body.authorId);
         book.addBook().then(() => {
             res.redirect('/book');
         });
@@ -71,7 +71,7 @@ class BookController {
     }
 
     postBorrow(req, res) {
-        Book.borrowBook(req.body.id, req.body.username, req.body.duedate).then(() => {
+        BookModel.borrowBook(req.body.id, req.body.username, req.body.duedate).then(() => {
             res.redirect('/book/borrowed');
         });
     }
@@ -81,7 +81,7 @@ class BookController {
     }
 
     postReturn(req, res) {
-        Book.returnBook(req.body.id).then(() => {
+        BookModel.returnBook(req.body.id).then(() => {
             res.redirect('/book/borrowed');
         });
     }
