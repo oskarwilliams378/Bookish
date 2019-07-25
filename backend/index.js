@@ -13,4 +13,4 @@ app.use('/user', userController);
 
 app.use('/', (req, res) => res.redirect('/book'));
 
-app.listen(3000, () => console.log('Listening to the app'));
+app.listen(3001, () => console.log('Listening to the app'));
