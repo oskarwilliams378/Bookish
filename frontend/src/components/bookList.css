@@ -1,0 +1,22 @@
+.bookList {
+    list-style: none;
+    width: 80%;
+    margin: 2em auto;
+    border-collapse: collapse;
+}
+
+.bookList tr {
+    background: #eeeeee;
+    padding: 5px;
+    line-height: 0px;
+    border: 3px solid white;
+    border-radius: 5px;
+}
+
+
+.category {
+    white-space: nowrap;
+    font-weight: bold;
+    text-align: left;
+    float: left
+} 

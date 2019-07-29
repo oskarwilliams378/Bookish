@@ -62,7 +62,7 @@ class BookController {
     postAddBook(req, res) { // eslint-disable-line no-unused-vars
         const book = new BookModel({ title: req.body.title, isbn: req.body.isbn, edition: req.body.edition, image_url: null, barcode_image_url: 'placeholder' }, null, req.body.authorId);
         book.addBook().then(() => {
-            res.redirect('/book');
+            res.send('');
         });
     }
 
